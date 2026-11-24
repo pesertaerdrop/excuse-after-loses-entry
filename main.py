@@ -41,6 +41,19 @@ def main() -> int:
     # Exact bytes, no trailing newline: the file IS the line.
     with open(path, "w", encoding="utf-8", newline="") as f:
         f.write(ENTRY)
+    # Post-write verification: read the file back and compare it
+    # byte-for-byte with the expected entry. A truncated or altered
+    # write must fail loudly instead of passing silently.
+    with open(path, "rb") as f:
+        written = f.read()
+    if written != ENTRY.encode("utf-8"):
+        print(
+            f"verification failed: {path} does not match the expected "
+            f"entry ({len(written)} bytes written, "
+            f"{len(ENTRY.encode('utf-8'))} expected)",
+            file=sys.stderr,
+        )
+        return 1
     print(f"wrote {len(ENTRY)} characters to {path}")
     return 0
 
